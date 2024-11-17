@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:travelcompanionfinder/register_login_screen.dart';
 
 import '../app_theme.dart';
 
@@ -164,7 +166,48 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       Icons.power_settings_new,
                       color: Colors.red,
                     ),
-                    onTap: () {},
+                    onTap: () async {
+                      final shouldSignOut = await showDialog<bool>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Confirm Sign Out'),
+                            content: const Text('Are you sure you want to log out?'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: const Text('Sign Out'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (shouldSignOut == true) {
+                        try {
+                          // Perform sign-out
+                          await Amplify.Auth.signOut();
+
+                          // Navigate to the login-screen
+                          Navigator.pushAndRemoveUntil(
+                            context, 
+                            MaterialPageRoute(builder: (context) => const RegisterLoginScreen()),
+                            (route) => false,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Signed out successfully.')),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error signing out: $e')),
+                          );
+                        }
+                      }
+                    },
                   ),
                 ),
               ),
